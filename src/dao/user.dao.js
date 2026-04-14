@@ -106,6 +106,28 @@ const changePassword = async (userId, newPassword)=>{
     conn.release();
 }
 
+const setIsVerified = async(userId,value)=>{
+    const conn = await pool.connect();
+    const sqlQurey = 'update users set isVerified = $2 where id = $1';
+
+    const result = await conn.query(sqlQurey,[userId,value])
+    conn.release();
+}
+
+// this function find user by resetPasswordToken and check that posswordToken expiry must be gratter than presen time.
+const findUserByResetPasswordToken = async(resetPasswordToken)=>{
+    const conn = await pool.connect();
+    const sqlQurey  = 'Select * from users where reset_password_token = $1 and reset_password_expiry > NOW()'
+
+    const user = await conn.query(sqlQurey,[resetPasswordToken])
+    conn.release();
+
+    if(user.rowCount === 0){
+        return null;
+    }
+
+    return user.rows[0];
+}
 export {
     createUser,
     findUserById,
@@ -113,6 +135,7 @@ export {
     setRefreshToken,
     setVerificationToken,
     setResetPasswordToken,
-    changePassword
-
+    changePassword,
+    setIsVerified,    
+    findUserByResetPasswordToken,
 }
