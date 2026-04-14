@@ -1,20 +1,22 @@
 import {Router} from 'express';
 import pool from '../config/db.js'
+import authenticate from '../middlewares/authenticate.middleware.js';
+import ApiResponse from '../utils/api-response.js'
 
 const router = Router();
 
 //get all seats
 router.get("/all", async (req, res) => {
     const result = await pool.query("select * from seats"); // equivalent to Seats.find() in mongoose
-    res.send(result.rows);
+    ApiResponse.ok(res,"fetched all seats.",{seats:result.rows})
 });
 
 //book a seat give the seatId and your name
 
-router.put("/:id/:name", async (req, res) => {
+router.put("/:id",authenticate, async (req, res) => {
     try {
         const id = req.params.id;
-        const name = req.params.name;
+        const user_id = req.user.id;
         // payment integration should be here
         // verify payment
         const conn = await pool.connect(); // pick a connection from the pool
@@ -32,20 +34,20 @@ router.put("/:id/:name", async (req, res) => {
         //if no rows found then the operation should fail can't book
         // This shows we Do not have the current seat available for booking
         if (result.rowCount === 0) {
-            res.send({ error: "Seat already booked" });
+            res.status(409).send({ error: "Seat already booked" });
             return;
         }
         //if we get the row, we are safe to update
-        const sqlU = "update seats set isbooked = 1, name = $2 where id = $1";
-        const updateResult = await conn.query(sqlU, [id, name]); // Again to avoid SQL INJECTION we are using $1 and $2 as placeholders
+        const sqlU = "update seats set isbooked = 1, user_id = $2 where id = $1";
+        const updateResult = await conn.query(sqlU, [id, user_id]); // Again to avoid SQL INJECTION we are using $1 and $2 as placeholders
 
         //end transaction by committing
         await conn.query("COMMIT");
         conn.release(); // release the connection back to the pool (so we do not keep the connection open unnecessarily)
-        res.send(updateResult);
+        ApiResponse.ok(res,"seat booked successfully.")
     } catch (ex) {
         console.log(ex);
-        res.send(500);
+        res.status(500).send("Internal Server Error");
     }
 });
 
