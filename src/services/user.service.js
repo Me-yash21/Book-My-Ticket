@@ -122,7 +122,7 @@ const verify = async(verificationToken) =>{
     return updatedUserObj;
 }
 
-const forgotpassword = async({email}) =>{
+const forgotPassword = async({email}) =>{
     const user = await findOne({email});
     if(!user){
         ApiError.badRequest("Email is not registerd")
@@ -158,6 +158,6 @@ export {
     logout,
     refresh,
     verify,
-    forgotpassword,
+    forgotPassword,
     resetPassword,
 }
