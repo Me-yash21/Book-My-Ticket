@@ -3,6 +3,7 @@ import { dirname } from "path";
 import { fileURLToPath } from "url";
 import cors from "cors";
 import cookieParser from 'cookie-parser'
+import userRouter from './routes/user.routes.js'
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -10,6 +11,8 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const app = new express();
 app.use(cors());
 app.use(cookieParser());
+
+app.use("/api/v1/user",userRouter);
 
 app.get("/", (req, res) => {
     res.sendFile(__dirname + "/index.html");
