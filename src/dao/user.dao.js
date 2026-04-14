@@ -1,11 +1,11 @@
 import pool  from '../config/db.js'
 import ApiError from '../utils/api-error.js'
 
-const createUser = async (name,email,password) =>{
+const createUser = async (name,email,password,verification_token = null) =>{
 
     const conn = await pool.connect(); // pick a connection from the pool ,
-    const sqlQurey = 'INSERT INTO TABLE users(name,email,password) VALUES ($1,$2,$3)';
-    const userResult = await conn.query(sqlQurey,[name,email,password])
+    const sqlQurey = 'INSERT INTO TABLE users(name,email,password,verification_token) VALUES ($1,$2,$3,$4)';
+    const userResult = await conn.query(sqlQurey,[name,email,password,verification_token])
 
     const user = await conn.query('select * from user where email = $1',[email])
     conn.release();
