@@ -153,6 +153,11 @@ const resetPassword = async(resetToken,newPassword)=>{
 
     return user
 }
+
+const getMe = async(userId)=>{
+    const user = await findUserById(userId,{password:0, refresh_token:0, verification_token:0, reset_password_token:0 });
+    return user;
+}
 export {
     register,
     login,
@@ -161,4 +166,5 @@ export {
     verify,
     forgotPassword,
     resetPassword,
+    getMe,
 }

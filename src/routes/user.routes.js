@@ -46,4 +46,9 @@ router.post(
     userController.resetPassword
 )
 
+router.get(
+    '/me',
+    authenticate,
+    userController.getMe
+)
 export default router

@@ -1,3 +1,4 @@
+import pool from '../config/db.js'
 import * as authService from '../services/user.service.js'
 import ApiResponse from '../utils/api-response.js'
 
@@ -64,6 +65,14 @@ const resetPassword = async (req,res)=>{
     ApiResponse.ok(res,"Password Reset successfully.",{user})
 }
 
+const getMe = async (req,res)=>{
+    const user = await authService.getMe(req.user.id);
+    const userBookedSeats = await pool.query('select id from seats where user_id = $1',[req.user.id])
+
+    user.bookedSeats = userBookedSeats.rows;
+
+    ApiResponse.ok(res,"User detail Fetched successfully",{user});
+}
 export {
     register,
     login,
@@ -72,4 +81,5 @@ export {
     verify,
     forgotPassword,
     resetPassword,
+    getMe
 }
