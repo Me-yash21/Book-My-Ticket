@@ -18,9 +18,9 @@ const sendVerificationEmail = async (email,token) => {
 
     try {
     const info = await transporter.sendMail({
-            from: '"Ballon Auth" <no-reply@ballon.com>', 
+            from: '"Ticket booking" <no-reply@demomailtrap.co>', 
             to: email,
-            subject: "Ballon: Email verification",
+            subject: "BookMyTicket: Email verification",
             text: `Click here to verify your ${process.env.FRONTEND_DOMAIN}/verify?token=${token} `,
             html: `
             <h1>Verify your Email</h1>
@@ -39,9 +39,9 @@ const sendForgotPasswordEmail = async (email,token) => {
 
     try {
     const info = await transporter.sendMail({
-            from: '"Ballon Auth" <no-reply@ballon.com>', 
+            from: '"Ticket booking" <no-reply@demomailtrap.co>', 
             to: email,
-            subject: "Password Reset ",
+            subject: "BookMyTicket: Password Reset ",
             text: `click here to reset your password ${process.env.FRONTEND_DOMAIN}/reset?token=${token} `,
             html: `
             <h1>Reset your password</h1>
