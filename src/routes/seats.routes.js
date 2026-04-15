@@ -43,7 +43,6 @@ router.put("/book/:id",authenticate, async (req, res) => {
         // This shows we Do not have the current seat available for booking
         if (result.rowCount === 0) {
             ApiError.conflict("Seat already booked")
-            return;
         }
         //if we get the row, we are safe to update
         const sqlU = "update seats set isbooked = 1, user_id = $2 where id = $1";
@@ -54,8 +53,7 @@ router.put("/book/:id",authenticate, async (req, res) => {
         conn.release(); // release the connection back to the pool (so we do not keep the connection open unnecessarily)
         ApiResponse.ok(res,"seat booked successfully.",{user: req.user,seat:result.rows[0]});
     } catch (ex) {
-        console.log(ex);
-        res.status(500).send("Internal Server Error");
+        throw ex;
     }
 });
 

@@ -27,7 +27,7 @@
         <span id="userName" class="text-slate-200 font-semibold text-sm tracking-wide">Loading...</span>
       </div>
       <button
-        onclick="handleLogout()"
+        id="logoutbtn"
         class="flex items-center gap-2 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 hover:border-rose-500/60 text-rose-400 hover:text-rose-300 font-semibold text-sm px-4 py-2.5 rounded-2xl transition-all duration-200 backdrop-blur-xl shadow-xl cursor-pointer active:scale-95"
       >
         <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -91,7 +91,6 @@
         const tbl = document.getElementById("tbl");
         const res = await fetch("api/v1/seats/all");
         const resarray = await res.json();
-        console.log("resarray:- ",resarray)
         const j = resarray.data?.seats.sort((a, b) => a.id - b.id);
         let tr;
         for (let i = 0; i < j.length; i++) {
@@ -135,8 +134,7 @@
               } else {
                 alert("Booked successfully!");
                 const userName = data.data?.user.name;
-                console.log("userName:- ",userName)
-                console.log("data:- ", data)
+
                 // Visually transition to booked state upon success
                 currentTd.className = `${baseClasses} bg-rose-500/10 text-rose-500/60 border border-rose-500/20 cursor-not-allowed`;
                 currentTd.innerHTML = `
@@ -162,7 +160,7 @@
             const res = await fetch("api/v1/user/me");
             const data = await res.json();
             const name = data.data?.user?.name || "User";
-            document.getElementById("userName").textContent = (name.length <=10) ? name : (name.slice(0,10))
+            document.getElementById("userName").textContent = (name.length <=10) ? name : (name.slice(0,10)+ '..')
             document.getElementById("userInitial").textContent = name.charAt(0).toUpperCase();
           } catch (e) {
             document.getElementById("userName").textContent = "User";
@@ -177,6 +175,9 @@
           } catch (e) {}
           window.location.href = "/login";
         }
+
+        const logoutbtn = document.getElementById('logoutbtn');
+        logoutbtn.onclick = handleLogout;
       }
       run();
     </script>
