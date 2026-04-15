@@ -17,6 +17,25 @@
   <body
     class="min-h-screen flex items-center justify-center p-6 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900"
   >
+
+    <!-- Top-right user profile & logout -->
+    <div class="fixed top-5 right-6 z-50 flex items-center gap-3">
+      <div class="flex items-center gap-3 bg-slate-800/80 backdrop-blur-xl border border-slate-700/50 rounded-2xl px-4 py-2.5 shadow-xl">
+        <div class="w-8 h-8 rounded-full bg-gradient-to-br from-emerald-400 to-cyan-400 flex items-center justify-center text-slate-900 font-bold text-sm select-none">
+          <span id="userInitial">?</span>
+        </div>
+        <span id="userName" class="text-slate-200 font-semibold text-sm tracking-wide">Loading...</span>
+      </div>
+      <button
+        onclick="handleLogout()"
+        class="flex items-center gap-2 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 hover:border-rose-500/60 text-rose-400 hover:text-rose-300 font-semibold text-sm px-4 py-2.5 rounded-2xl transition-all duration-200 backdrop-blur-xl shadow-xl cursor-pointer active:scale-95"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h6a2 2 0 012 2v1" />
+        </svg>
+        Logout
+      </button>
+    </div>
     <div
       class="max-w-7xl w-full bg-slate-800/80 backdrop-blur-xl rounded-3xl shadow-2xl p-10 border border-slate-700/50"
     >
@@ -70,9 +89,10 @@
     <script>
       async function run() {
         const tbl = document.getElementById("tbl");
-        const res = await fetch("/seats");
+        const res = await fetch("api/v1/seats/all");
         const resarray = await res.json();
-        const j = resarray.sort((a, b) => a.id - b.id);
+        console.log("resarray:- ",resarray)
+        const j = resarray.data?.seats.sort((a, b) => a.id - b.id);
         let tr;
         for (let i = 0; i < j.length; i++) {
           if (i % 8 === 0) tr = document.createElement("tr");
@@ -106,22 +126,23 @@
 
             try {
               const id = j[i].id; // Safe from loop closure
-              const name = prompt("Enter your name");
-              if (!name) return;
 
-              const res = await fetch(`/${id}/${name}`, { method: "PUT" });
+              const res = await fetch(`api/v1/seats/book/${id}`, { method: "PUT" });
               const data = await res.json();
 
               if (data.error) {
                 alert("FAILED! Couldn't book! already booked.");
               } else {
                 alert("Booked successfully!");
+                const userName = data.data?.user.name;
+                console.log("userName:- ",userName)
+                console.log("data:- ", data)
                 // Visually transition to booked state upon success
                 currentTd.className = `${baseClasses} bg-rose-500/10 text-rose-500/60 border border-rose-500/20 cursor-not-allowed`;
                 currentTd.innerHTML = `
                             <span class="relative z-10">${id}</span>
                             <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 px-4 py-2 bg-slate-900 border border-slate-700 text-sm text-slate-300 rounded-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 whitespace-nowrap shadow-2xl z-50 pointer-events-none font-normal shadow-[0_10px_25px_rgba(0,0,0,0.5)]">
-                                Booked by: <span class="font-bold text-white ml-1">${name}</span>
+                                Booked by: <span class="font-bold text-white ml-1">${userName}</span>
                                 <div class="absolute top-full left-1/2 -translate-x-1/2 -mt-[1px] border-[6px] border-transparent border-t-slate-700"></div>
                                 <div class="absolute top-full left-1/2 -translate-x-1/2 -mt-[2px] border-[5px] border-transparent border-t-slate-900"></div>
                             </div>
@@ -133,6 +154,28 @@
           });
           tr.appendChild(td);
           tbl.appendChild(tr);
+        }
+
+        // Load logged-in user profile
+        async function loadUserProfile() {
+          try {
+            const res = await fetch("api/v1/user/me");
+            const data = await res.json();
+            const name = data.data?.user?.name || "User";
+            document.getElementById("userName").textContent = (name.length <=10) ? name : (name.slice(0,10))
+            document.getElementById("userInitial").textContent = name.charAt(0).toUpperCase();
+          } catch (e) {
+            document.getElementById("userName").textContent = "User";
+            document.getElementById("userInitial").textContent = "U";
+          }
+        }
+        loadUserProfile();
+
+        async function handleLogout() {
+          try {
+            await fetch("api/v1/user/logout", { method: "POST" });
+          } catch (e) {}
+          window.location.href = "/login";
         }
       }
       run();

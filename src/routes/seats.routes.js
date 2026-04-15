@@ -2,18 +2,26 @@ import {Router} from 'express';
 import pool from '../config/db.js'
 import authenticate from '../middlewares/authenticate.middleware.js';
 import ApiResponse from '../utils/api-response.js'
+import ApiError from '../utils/api-error.js';
 
 const router = Router();
 
 //get all seats
 router.get("/all", async (req, res) => {
-    const result = await pool.query("select * from seats"); // equivalent to Seats.find() in mongoose
+    const sqlQurey = `
+    select 
+    s.*,u.name 
+    from seats as s
+    left join users as u
+    on s.user_id = u.id
+    `
+    const result = await pool.query(sqlQurey); // equivalent to Seats.find() in mongoose
     ApiResponse.ok(res,"fetched all seats.",{seats:result.rows})
 });
 
 //book a seat give the seatId and your name
 
-router.put("/:id",authenticate, async (req, res) => {
+router.put("/book/:id",authenticate, async (req, res) => {
     try {
         const id = req.params.id;
         const user_id = req.user.id;
@@ -34,7 +42,7 @@ router.put("/:id",authenticate, async (req, res) => {
         //if no rows found then the operation should fail can't book
         // This shows we Do not have the current seat available for booking
         if (result.rowCount === 0) {
-            res.status(409).send({ error: "Seat already booked" });
+            ApiError.conflict("Seat already booked")
             return;
         }
         //if we get the row, we are safe to update
@@ -44,7 +52,7 @@ router.put("/:id",authenticate, async (req, res) => {
         //end transaction by committing
         await conn.query("COMMIT");
         conn.release(); // release the connection back to the pool (so we do not keep the connection open unnecessarily)
-        ApiResponse.ok(res,"seat booked successfully.")
+        ApiResponse.ok(res,"seat booked successfully.",{user: req.user,seat:result.rows[0]});
     } catch (ex) {
         console.log(ex);
         res.status(500).send("Internal Server Error");
