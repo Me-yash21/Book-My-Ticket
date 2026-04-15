@@ -359,7 +359,7 @@
                 console.log("data:- ",data)
                 if (!res.ok) {
                     // Show error from your API (e.g. "Email already in use")
-                    errorText.textContent = data.message || "Something went wrong. Please try again.";
+                    errorText.textContent = data.error.message || "Something went wrong. Please try again.";
                     errorBanner.classList.remove("hidden");
                     return;
                 }

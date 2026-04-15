@@ -318,10 +318,9 @@
                 });
 
                 const data = await res.json();
-                console.log("data:- ",data);
                 if (!res.ok) {
                     // Wrong credentials or server error
-                    errorText.textContent = data.message || "Invalid email or password.";
+                    errorText.textContent = data.error.message || "Invalid email or password.";
                     errorBanner.classList.remove("hidden");
                     shakeCard();
                     return;
