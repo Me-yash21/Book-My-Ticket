@@ -17,7 +17,7 @@ const login = async(req, res)=>{
         httpOnly:true,
         maxAge: 24 * 60 * 60 * 1000 // 1d
     })
-    ApiResponse.ok(res,"Login successfully",{user,accessToken})
+    ApiResponse.ok(res,"Login successfully",{user})
 }
 
 const logout = async(req,res)=>{
@@ -37,8 +37,11 @@ const refresh = async(req, res)=>{
         httpOnly: true,
         maxAge: 7 * 24 * 60 * 60 * 1000 // 7d 
     })
-
-    ApiResponse.ok(res,"Tokens update successfully",{user,accessToken})
+    res.cookie("accessToken",accessToken,{
+        httpOnly:true,
+        maxAge: 24 * 60 * 60 * 1000 // 1d
+    })
+    ApiResponse.ok(res,"Tokens update successfully",{user})
 }
 
 const verify = async(req, res) =>{

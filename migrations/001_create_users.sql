@@ -6,7 +6,7 @@ CREATE TABLE users(
     CHECK(char_length(password) >= 8),
     isVerified Boolean DEFAULT false,
     refresh_token TEXT,
-    varification_token TEXT,
+    verification_token TEXT,
     reset_password_token TEXT, 
     reset_password_expiry TIMESTAMPTZ,
 

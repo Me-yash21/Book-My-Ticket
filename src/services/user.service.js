@@ -13,10 +13,10 @@ import ApiError from '../utils/api-error.js';
 import {generateAccessToken, generateRefreshToken, generateResetToken, verifyRefreshToken} from '../utils/jwt-utils.js'
 import {hashPassword,comparePassword} from '../utils/password-utils.js'
 import {sendVerificationEmail,sendForgotPasswordEmail} from '../config/mail.js'
-import crypto from 'node:crypto'
+import crypto from 'crypto'
 
 function hashToken(token){
-    return crypto.createHash('sha26').update(token).digest('hex')
+    return crypto.createHash('sha256').update(token).digest('hex')
 }
 
 const register = async({name,email,password})=>{
@@ -52,7 +52,7 @@ const login = async({email,password}) =>{
     const isPasswordMatched = await comparePassword(password,user.password);
     if(!isPasswordMatched) ApiError.badRequest("Email or password is invalid.");
 
-    if(!user.isVerified) ApiError.unauthorized("Verify your email before login");
+    if(!user.isverified) ApiError.unauthorized("Verify your email before login");
 
     const accessToken = generateAccessToken({
         id:user.id,
@@ -66,7 +66,7 @@ const login = async({email,password}) =>{
     await setRefreshToken(user.id,hashToken(refreshToken));
 
     delete user.password;
-    delete user.refreshToken;
+    delete user.refresh_token;
 
     return { user, accessToken, refreshToken}
 }
@@ -80,7 +80,7 @@ const refresh = async(token)=>{
     if(!token) ApiError.badRequest("Refresh token is missing");
     const decodedToken = verifyRefreshToken(token)
 
-    const user = await findUserById(decodedToken.id);
+    const user = await findUserById(decodedToken.id,{password:0, verification_token:0});
     if(!user) ApiError.notFound("User is not found")
 
     if(hashToken(token) !== user.refresh_token ){
@@ -100,7 +100,6 @@ const refresh = async(token)=>{
     // update the hashed refresh token in the database
     await setRefreshToken(user.id, hashToken(refreshToken));
 
-    delete user.password;
     delete user.refresh_token;
 
     return { user, accessToken, refreshToken}
@@ -118,7 +117,7 @@ const verify = async(verificationToken) =>{
     await setIsVerified(user.id,true);
     await setVerificationToken(user.id,null);
 
-    const updatedUserObj = await findUserById(user.id,{password:0, refresh_token: 0})
+    const updatedUserObj = await findUserById(user.id,{password:0, refresh_token: 0,verification_token: 0 ,reset_password_token:0})
     return updatedUserObj;
 }
 
@@ -149,6 +148,8 @@ const resetPassword = async(resetToken,newPassword)=>{
     await setResetPasswordToken(user.id,null)
 
     delete user.password;
+    delete user.refresh_token;
+    delete user.reset_password_token;
 
     return user
 }

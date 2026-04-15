@@ -4,10 +4,10 @@ import ApiError from '../utils/api-error.js'
 const createUser = async (name,email,password,verification_token = null) =>{
 
     const conn = await pool.connect(); // pick a connection from the pool ,
-    const sqlQurey = 'INSERT INTO TABLE users(name,email,password,verification_token) VALUES ($1,$2,$3,$4)';
+    const sqlQurey = 'INSERT INTO users (name,email,password,verification_token) VALUES ($1,$2,$3,$4)';
     const userResult = await conn.query(sqlQurey,[name,email,password,verification_token])
 
-    const user = await conn.query('select * from user where email = $1',[email])
+    const user = await conn.query('select * from users where email = $1',[email])
     conn.release();
     return user.rows[0];
 }
@@ -28,7 +28,7 @@ const findUserById = async(userId,selectOption = {})=>{
     // * delete the object.password.
     for(const property in selectOption){
         if(!selectOption[property]){
-            delete userObj.property
+            delete userObj[property]
         }
     }
 
@@ -42,13 +42,13 @@ const findOne = async(filter = {} ,selectOption = {})=>{
     if(Object.keys(filter).length === 0){
         return null
     }
-    
+
     const filterKeyValues = Object.entries(filter);
-    const filterQurey = filterKeyValues.map((keyValue)=>{
-        return `${keyValue[0]} = ${keyValue[1]}` //e.g. email = 'example@test.com'
+    const filterQurey = filterKeyValues.map((keyValue,index)=>{
+        return `${keyValue[0]} = $${index+1}` //e.g. email = $1
     }).join(" AND ");
     const sqlQurey = `select * from users where ${filterQurey}`;
-    const user = await conn.query(sqlQurey);
+    const user = await conn.query(sqlQurey,Object.values(filter));
 
     conn.release();
 
@@ -62,7 +62,7 @@ const findOne = async(filter = {} ,selectOption = {})=>{
     // * delete the object.password.
     for(const property in selectOption){
         if(!selectOption[property]){
-            delete userObj.property
+            delete userObj[property]
         }
     }
 
@@ -91,10 +91,11 @@ const setResetPasswordToken = async (userId,resetPasswordToken) =>{
     const sqlQurey = `
     update users 
     set reset_password_token = $2,
-        reset_password_expiry = ${new Date(Date.now() + 15 * 60 * 1000 )}
+        reset_password_expiry = $3
     where id = $1`;
 
-    const result = await conn.query(sqlQurey,[userId,resetPasswordToken])
+    const resetPasswordExpiry = new Date(Date.now() + 15 * 60 * 1000 )
+    const result = await conn.query(sqlQurey,[userId,resetPasswordToken,resetPasswordExpiry])
     conn.release();
 }
 

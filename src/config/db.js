@@ -6,7 +6,7 @@ import pg from "pg";
 // the pooler will keep that connection open for sometime to other clients to reuse
 const pool = new pg.Pool({
     host: "localhost",
-    port: 5433,
+    port: 5432,
     user: process.env.POSTGRES_USER,
     password: process.env.POSTGRES_PASS,
     database: "postgres",

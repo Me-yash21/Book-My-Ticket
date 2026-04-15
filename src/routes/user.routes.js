@@ -35,13 +35,13 @@ router.post(
 )
 
 router.post(
-    '/forogot-password',
+    '/forgot-password',
     validate(userDtos.ForgotPasswordDto),
     userController.forgotPassword
 )
 
 router.post(
-    '/reset-password',
+    '/reset-password/:token',
     validate(userDtos.ResetPasswordDto),
     userController.resetPassword
 )

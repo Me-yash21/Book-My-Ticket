@@ -3,7 +3,7 @@ import ApiError from '../utils/api-error.js'
 import {verifyAccessToken} from '../utils/jwt-utils.js'
 
 const authenticate = async(req,_,next)=>{
-    const accessToken = req.cookies?.accessToken || req.headers.authorization.replace('Bearer ',"")
+    const accessToken = req.cookies?.accessToken || req.headers.authorization?.replace('Bearer ',"")
     if(!accessToken) ApiError.unauthorized("Unauthorized Request");
 
     const decodedToken = verifyAccessToken(accessToken);
