@@ -30,6 +30,10 @@ app.get("/login",(req,res)=>{
     res.sendFile(projectRoot + "/public/login.html")
 })
 
+app.get("/verify",(req,res)=>{
+    res.sendFile(projectRoot+"/public/verify.html")
+})
+
 app.use("/api/v1/user",userRouter);
 app.use("/api/v1/seats",seatsRouter);
 
