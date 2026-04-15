@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Create Account</title>
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Google Fonts: DM Serif Display + DM Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+        href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap"
+        rel="stylesheet" />
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        serif: ["DM Serif Display", "serif"],
+                        sans: ["DM Sans", "sans-serif"],
+                    },
+                    colors: {
+                        ink: "#0f0e0d",
+                        paper: "#f5f2ee",
+                        clay: "#c8603a",
+                        mist: "#ddd8d0",
+                    },
+                    keyframes: {
+                        fadeUp: {
+                            "0%": { opacity: "0", transform: "translateY(18px)" },
+                            "100%": { opacity: "1", transform: "translateY(0)" },
+                        },
+                    },
+                    animation: {
+                        "fade-up": "fadeUp 0.55s ease both",
+                        "fade-up-delay": "fadeUp 0.55s 0.15s ease both",
+                        "fade-up-late": "fadeUp 0.55s 0.3s ease both",
+                    },
+                },
+            },
+        };
+    </script>
+
+    <style>
+        /* ── base ─────────────────────────────────────────── */
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: #f5f2ee;
+            font-family: "DM Sans", sans-serif;
+            min-height: 100svh;
+        }
+
+        /* ── decorative grain overlay ─────────────────────── */
+        body::before {
+            content: "";
+            position: fixed;
+            inset: 0;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* ── input focus ring ─────────────────────────────── */
+        .field:focus {
+            outline: none;
+            border-color: #c8603a;
+            box-shadow: 0 0 0 3px rgba(200, 96, 58, 0.15);
+        }
+
+        /* ── password strength bar ────────────────────────── */
+        #strength-bar {
+            transition: width 0.3s ease, background-color 0.3s ease;
+        }
+
+        /* ── submit button hover ──────────────────────────── */
+        #submit-btn {
+            transition: background-color 0.2s ease, transform 0.15s ease;
+        }
+
+        #submit-btn:hover:not(:disabled) {
+            background-color: #a84e2c;
+            transform: translateY(-1px);
+        }
+
+        #submit-btn:active:not(:disabled) {
+            transform: translateY(0);
+        }
+
+        #submit-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+
+<body class="relative flex items-center justify-center px-4 py-16">
+
+    <!-- ── Left accent stripe (decorative) ── -->
+    <div class="fixed left-0 top-0 bottom-0 w-1.5 bg-clay hidden lg:block"></div>
+
+    <!-- ── Card ── -->
+    <div class="relative z-10 w-full max-w-md">
+
+        <!-- Brand / heading -->
+        <div class="mb-10 animate-fade-up">
+            <p class="text-xs font-semibold tracking-[0.25em] uppercase text-clay mb-3">
+                Get started
+            </p>
+            <h1 class="font-serif text-5xl text-ink leading-tight">
+                Create your<br /><em>account.</em>
+            </h1>
+        </div>
+
+        <!-- Form card -->
+        <div class="animate-fade-up-delay bg-white/70 backdrop-blur-sm border border-mist rounded-2xl p-8 shadow-sm">
+
+            <!-- Server error banner (hidden by default) -->
+            <div id="error-banner"
+                class="hidden mb-5 flex items-start gap-3 bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg px-4 py-3">
+                <svg class="mt-0.5 shrink-0 w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd"
+                        d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+                        clip-rule="evenodd" />
+                </svg>
+                <span id="error-text"></span>
+            </div>
+
+            <!-- Success banner (hidden by default) -->
+            <div id="success-banner"
+                class="hidden mb-5 flex items-center gap-3 bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm rounded-lg px-4 py-3">
+                <svg class="shrink-0 w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd"
+                        d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                        clip-rule="evenodd" />
+                </svg>
+                <span>Account created! Redirecting…</span>
+            </div>
+
+            <div id="signup-form">
+                <!-- Full name -->
+                <div class="mb-5">
+                    <label for="name" class="block text-xs font-semibold tracking-widest uppercase text-ink/50 mb-2">
+                        Full Name
+                    </label>
+                    <input id="name" type="text" placeholder="Jane Doe" autocomplete="name"
+                        class="field w-full bg-paper border border-mist rounded-lg px-4 py-3 text-sm text-ink placeholder-ink/30 font-sans" />
+                    <p id="name-err" class="hidden mt-1.5 text-xs text-red-500"></p>
+                </div>
+
+                <!-- Email -->
+                <div class="mb-5">
+                    <label for="email" class="block text-xs font-semibold tracking-widest uppercase text-ink/50 mb-2">
+                        Email Address
+                    </label>
+                    <input id="email" type="email" placeholder="jane@example.com" autocomplete="email"
+                        class="field w-full bg-paper border border-mist rounded-lg px-4 py-3 text-sm text-ink placeholder-ink/30 font-sans" />
+                    <p id="email-err" class="hidden mt-1.5 text-xs text-red-500"></p>
+                </div>
+
+                <!-- Password -->
+                <div class="mb-2">
+                    <label for="password"
+                        class="block text-xs font-semibold tracking-widest uppercase text-ink/50 mb-2">
+                        Password
+                    </label>
+                    <div class="relative">
+                        <input id="password" type="password" placeholder="Min. 8 characters" autocomplete="new-password"
+                            class="field w-full bg-paper border border-mist rounded-lg px-4 py-3 pr-11 text-sm text-ink placeholder-ink/30 font-sans" />
+                        <!-- Toggle visibility -->
+                        <button type="button" id="toggle-pw"
+                            class="absolute right-3 top-1/2 -translate-y-1/2 text-ink/30 hover:text-ink/60 transition-colors"
+                            aria-label="Toggle password visibility">
+                            <!-- Eye icon -->
+                            <svg id="eye-icon" xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none"
+                                viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                            </svg>
+                            <!-- Eye-off icon (hidden) -->
+                            <svg id="eye-off-icon" xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 hidden" fill="none"
+                                viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.542-7a9.97 9.97 0 012.184-3.416M6.53 6.53A9.965 9.965 0 0112 5c4.478 0 8.268 2.943 9.542 7a10.025 10.025 0 01-4.132 5.411M3 3l18 18" />
+                            </svg>
+                        </button>
+                    </div>
+                    <p id="pw-err" class="hidden mt-1.5 text-xs text-red-500"></p>
+                </div>
+
+                <!-- Password strength indicator -->
+                <div class="mb-5">
+                    <div class="h-1 w-full bg-mist rounded-full overflow-hidden">
+                        <div id="strength-bar" class="h-full w-0 rounded-full bg-clay"></div>
+                    </div>
+                    <p id="strength-label" class="mt-1 text-xs text-ink/40"></p>
+                </div>
+
+                <!-- Submit -->
+                <button id="submit-btn" type="button"
+                    class="w-full bg-clay text-white font-semibold text-sm tracking-wide rounded-lg px-4 py-3.5 flex items-center justify-center gap-2">
+                    <span id="btn-label">Create Account</span>
+                    <!-- Spinner (hidden) -->
+                    <svg id="spinner" class="hidden animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Divider -->
+            <div class="flex items-center gap-3 my-6">
+                <div class="flex-1 h-px bg-mist"></div>
+                <span class="text-xs text-ink/30 font-medium">or</span>
+                <div class="flex-1 h-px bg-mist"></div>
+            </div>
+
+            <!-- Login link -->
+            <p class="text-center text-sm text-ink/50">
+                Already have an account?
+                <a href="/login" class="text-clay font-semibold hover:underline underline-offset-2">
+                    Sign in
+                </a>
+            </p>
+        </div>
+
+        <!-- Footer note -->
+        <p class="animate-fade-up-late mt-6 text-center text-xs text-ink/30">
+            By signing up you agree to our
+            <a href="#" class="underline underline-offset-2 hover:text-clay transition-colors">Terms</a>
+            &amp;
+            <a href="#" class="underline underline-offset-2 hover:text-clay transition-colors">Privacy Policy</a>.
+        </p>
+    </div>
+
+    <!-- ──────────────────────────────────────────────────────────────────────
+    JavaScript — handles validation + API call to your Express backend
+─────────────────────────────────────────────────────────────────────── -->
+    <script>
+        // ── Config ─────────────────────────────────────────────────────────────
+        // Change this to match your register endpoint, e.g. "/api/auth/register"
+        const REGISTER_ENDPOINT = "/api/auth/register";
+
+        // ── DOM refs ───────────────────────────────────────────────────────────
+        const nameInput = document.getElementById("name");
+        const emailInput = document.getElementById("email");
+        const pwInput = document.getElementById("password");
+        const submitBtn = document.getElementById("submit-btn");
+        const btnLabel = document.getElementById("btn-label");
+        const spinner = document.getElementById("spinner");
+        const errorBanner = document.getElementById("error-banner");
+        const errorText = document.getElementById("error-text");
+        const successBanner = document.getElementById("success-banner");
+        const strengthBar = document.getElementById("strength-bar");
+        const strengthLabel = document.getElementById("strength-label");
+        const togglePw = document.getElementById("toggle-pw");
+        const eyeIcon = document.getElementById("eye-icon");
+        const eyeOffIcon = document.getElementById("eye-off-icon");
+
+        // ── Password visibility toggle ─────────────────────────────────────────
+        togglePw.addEventListener("click", () => {
+            const isPassword = pwInput.type === "password";
+            pwInput.type = isPassword ? "text" : "password";
+            eyeIcon.classList.toggle("hidden", isPassword);
+            eyeOffIcon.classList.toggle("hidden", !isPassword);
+        });
+
+        // ── Password strength ──────────────────────────────────────────────────
+        pwInput.addEventListener("input", () => {
+            const val = pwInput.value;
+            let score = 0;
+            if (val.length >= 8) score++;
+            if (/[A-Z]/.test(val)) score++;
+            if (/[0-9]/.test(val)) score++;
+            if (/[^A-Za-z0-9]/.test(val)) score++;
+
+            const levels = [
+                { width: "0%", color: "#c8603a", label: "" },
+                { width: "25%", color: "#ef4444", label: "Weak" },
+                { width: "50%", color: "#f59e0b", label: "Fair" },
+                { width: "75%", color: "#3b82f6", label: "Good" },
+                { width: "100%", color: "#22c55e", label: "Strong" },
+            ];
+            const level = levels[score];
+            strengthBar.style.width = val.length ? level.width : "0%";
+            strengthBar.style.backgroundColor = level.color;
+            strengthLabel.textContent = val.length ? level.label : "";
+        });
+
+        // ── Inline field validation helpers ───────────────────────────────────
+        function showErr(id, msg) {
+            const el = document.getElementById(id);
+            el.textContent = msg;
+            el.classList.remove("hidden");
+        }
+        function clearErr(id) {
+            const el = document.getElementById(id);
+            el.textContent = "";
+            el.classList.add("hidden");
+        }
+        function validate() {
+            let ok = true;
+
+            if (!nameInput.value.trim()) {
+                showErr("name-err", "Please enter your full name."); ok = false;
+            } else { clearErr("name-err"); }
+
+            const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRe.test(emailInput.value.trim())) {
+                showErr("email-err", "Enter a valid email address."); ok = false;
+            } else { clearErr("email-err"); }
+
+            if (pwInput.value.length < 8) {
+                showErr("pw-err", "Password must be at least 8 characters."); ok = false;
+            } else { clearErr("pw-err"); }
+
+            return ok;
+        }
+
+        // ── Submit ─────────────────────────────────────────────────────────────
+        submitBtn.addEventListener("click", async () => {
+            // Hide banners
+            errorBanner.classList.add("hidden");
+            successBanner.classList.add("hidden");
+
+            if (!validate()) return;
+
+            // Loading state
+            submitBtn.disabled = true;
+            btnLabel.textContent = "Creating account…";
+            spinner.classList.remove("hidden");
+
+            try {
+                const res = await fetch('api/v1/user/register', {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    credentials: "same-origin", // send/receive cookies
+                    body: JSON.stringify({
+                        name: nameInput.value.trim(),
+                        email: emailInput.value.trim(),
+                        password: pwInput.value,
+                    }),
+                });
+
+                const data = await res.json();
+
+                console.log("res:- ",res);
+                console.log("data:- ",data)
+                if (!res.ok) {
+                    // Show error from your API (e.g. "Email already in use")
+                    errorText.textContent = data.message || "Something went wrong. Please try again.";
+                    errorBanner.classList.remove("hidden");
+                    return;
+                }
+
+                // ── SUCCESS ──
+                // Your Express controller should have already set the JWT cookie.
+                // Show success banner then redirect to the protected home route.
+                successBanner.classList.remove("hidden");
+                document.getElementById("signup-form").classList.add("opacity-50", "pointer-events-none");
+
+                setTimeout(() => {
+                    window.location.href = "/login"; // redirect to login root
+                }, 1200);
+
+            } catch (err) {
+                errorText.textContent = "Network error — please check your connection.";
+                errorBanner.classList.remove("hidden");
+            } finally {
+                submitBtn.disabled = false;
+                btnLabel.textContent = "Create Account";
+                spinner.classList.add("hidden");
+            }
+        });
+
+        // ── Allow Enter key to submit ──────────────────────────────────────────
+        [nameInput, emailInput, pwInput].forEach(el =>
+            el.addEventListener("keydown", e => {
+                if (e.key === "Enter") submitBtn.click();
+            })
+        );
+    </script>
+</body>
+
+</html>
